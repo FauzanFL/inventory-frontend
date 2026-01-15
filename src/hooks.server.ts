@@ -12,6 +12,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		throw redirect(303, '/dashboard');
 	}
 
+	if (token && event.url.pathname.startsWith('/login')) {
+		throw redirect(303, '/dashboard');
+	}
+
 	if (!token && event.url.pathname.startsWith('/dashboard')) {
 		throw redirect(303, '/login');
 	}
