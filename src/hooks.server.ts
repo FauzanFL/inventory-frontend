@@ -20,12 +20,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 		throw redirect(303, '/login');
 	}
 
-	if (event.url.pathname.startsWith('/admin')) {
-		const userRole = event.cookies.get('user_role');
-		if (userRole !== 'admin') {
-			throw redirect(303, '/dashboard');
-		}
-	}
-
 	return await resolve(event);
 };

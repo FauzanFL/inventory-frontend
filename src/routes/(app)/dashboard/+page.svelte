@@ -150,7 +150,6 @@
 			<h1 class="text-3xl font-bold tracking-tight">Inventory List</h1>
 			<p class="text-muted-foreground">Manage your items here.</p>
 		</div>
-		<Button variant="outline" onclick={logout}>Logout</Button>
 	</div>
 
 	<div class="grid gap-4 md:grid-cols-3">

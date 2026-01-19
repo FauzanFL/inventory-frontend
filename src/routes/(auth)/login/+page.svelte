@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { Label } from '$lib/components/ui/label';
 
 	let username = '';
@@ -25,6 +25,7 @@
 			});
 
 			if (response.ok) {
+				await invalidateAll();
 				goto('/dashboard');
 			} else {
 				error = 'Invalid username or password.';
