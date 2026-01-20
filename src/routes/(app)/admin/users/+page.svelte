@@ -136,6 +136,7 @@
 	}
 
 	async function handleDeleteUser() {
+		isLoading = true;
 		try {
 			const response = await fetch(`http://localhost:8000/api/users/${deletionId}`, {
 				method: 'DELETE',
@@ -157,6 +158,8 @@
 			}
 		} catch (error) {
 			toast.error('Failed to delete user');
+		} finally {
+			isLoading = false;
 		}
 	}
 
@@ -188,11 +191,13 @@
 		}
 	}
 
-	async function handleUpdateRole(roleId: number) {
+	async function handleUpdateUserRole(roleId: number) {
 		if (!roleId) {
 			toast.error('Please select a role');
 			return;
 		}
+
+		isLoading = true;
 
 		try {
 			const response = await fetch(
@@ -220,6 +225,7 @@
 			toast.error('Failed to update role');
 		} finally {
 			roleId = 0;
+			isLoading = false;
 			resetSelectedUser();
 		}
 	}
@@ -274,47 +280,50 @@
 		</Dialog.Root>
 
 		<Card.Root>
-			<Table.Root>
-				<Table.Header>
-					<Table.Row>
-						<Table.Head>Username</Table.Head>
-						<Table.Head>Email</Table.Head>
-						<Table.Head>Role</Table.Head>
-						<Table.Head class="text-center">Action</Table.Head>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{#each users as u}
+			<Card.Content>
+				<Table.Root>
+					<Table.Header>
 						<Table.Row>
-							<Table.Cell>{u.username}</Table.Cell>
-							<Table.Cell>{u.email}</Table.Cell>
-							<Table.Cell class="font-semibold">{u.role?.name}</Table.Cell>
-							<Table.Cell class="text-center">
-								<DropdownMenu.Root>
-									<DropdownMenu.Trigger>
-										{#snippet child({ props })}
-											<Button {...props} variant="outline">Manage</Button>
-										{/snippet}
-									</DropdownMenu.Trigger>
-									<DropdownMenu.Content>
-										<DropdownMenu.Item onclick={() => openEditModal(u)}>Edit User</DropdownMenu.Item
-										>
-										<DropdownMenu.Item onclick={() => openRoleModal(u)}
-											>Change Role</DropdownMenu.Item
-										>
-										<DropdownMenu.Item>Reset Password</DropdownMenu.Item>
-										<DropdownMenu.Item
-											onclick={() => confirmDelete(u.id)}
-											class="!focus:text-destructive-foreground cursor-pointer text-destructive
-											focus:bg-destructive">Delete</DropdownMenu.Item
-										>
-									</DropdownMenu.Content>
-								</DropdownMenu.Root>
-							</Table.Cell>
+							<Table.Head>Username</Table.Head>
+							<Table.Head>Email</Table.Head>
+							<Table.Head>Role</Table.Head>
+							<Table.Head class="text-center">Action</Table.Head>
 						</Table.Row>
-					{/each}
-				</Table.Body>
-			</Table.Root>
+					</Table.Header>
+					<Table.Body>
+						{#each users as u}
+							<Table.Row>
+								<Table.Cell>{u.username}</Table.Cell>
+								<Table.Cell>{u.email}</Table.Cell>
+								<Table.Cell class="font-semibold">{u.role?.name}</Table.Cell>
+								<Table.Cell class="text-center">
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger>
+											{#snippet child({ props })}
+												<Button {...props} variant="outline" size="sm">Manage</Button>
+											{/snippet}
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content>
+											<DropdownMenu.Item onclick={() => openEditModal(u)}
+												>Edit User</DropdownMenu.Item
+											>
+											<DropdownMenu.Item onclick={() => openRoleModal(u)}
+												>Change Role</DropdownMenu.Item
+											>
+											<DropdownMenu.Item>Reset Password</DropdownMenu.Item>
+											<DropdownMenu.Item
+												onclick={() => confirmDelete(u.id)}
+												class="!focus:text-destructive-foreground cursor-pointer text-destructive
+												focus:bg-destructive">Delete</DropdownMenu.Item
+											>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								</Table.Cell>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+			</Card.Content>
 		</Card.Root>
 	</div>
 
@@ -338,8 +347,8 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button type="submit" variant="default" onclick={handleUpdateUser} disabled={isLoading}>
-					{isLoading ? 'Updating...' : 'Update'}
+				<Button type="submit" variant="default" onclick={handleUpdateUser} disabled={isEditing}>
+					{isEditing ? 'Updating...' : 'Update'}
 				</Button>
 			</Dialog.Footer>
 		</Dialog.Content>
@@ -354,7 +363,7 @@
 			</AlertDialog.Header>
 			<AlertDialog.Footer>
 				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-				<Button type="submit" variant="default" onclick={handleDeleteUser} disabled={isLoading}>
+				<Button type="submit" variant="default" onclick={handleDeleteUser} disabled={isEditing}>
 					{isLoading ? 'Deleting...' : 'Delete'}
 				</Button>
 			</AlertDialog.Footer>
@@ -377,7 +386,7 @@
 						<Button
 							variant={role.id === selectedUser.role_id ? 'default' : 'outline'}
 							class="flex items-center justify-between text-lg"
-							onclick={() => handleUpdateRole(role.id)}
+							onclick={() => handleUpdateUserRole(role.id)}
 							disabled={selectedUser.role_id === role.id}
 						>
 							{role.name}

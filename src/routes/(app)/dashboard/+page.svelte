@@ -215,50 +215,52 @@
 		</Dialog.Root>
 
 		<Card.Root>
-			<Table.Root>
-				<Table.Header>
-					<Table.Row>
-						<Table.Head>Name</Table.Head>
-						<Table.Head>Description</Table.Head>
-						<Table.Head>SKU</Table.Head>
-						<Table.Head class="text-right">Quantity</Table.Head>
-						<Table.Head class="text-center">Action</Table.Head>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{#each data.items as item}
+			<Card.Content>
+				<Table.Root>
+					<Table.Header>
 						<Table.Row>
-							<Table.Cell class="font-medium">{item.name}</Table.Cell>
-							<Table.Cell>{item.description ? item.description : '-'}</Table.Cell>
-							<Table.Cell>{item.sku}</Table.Cell>
-							<Table.Cell class="text-right">{item.quantity}</Table.Cell>
-							<Table.Cell class="text-center">
-								<Button
-									variant="outline"
-									onclick={() => openEditModal(item)}
-									size="sm"
-									class="hover:cursor-pointer">Edit</Button
-								>
-
-								{#if user.role === 'ADMIN'}
+							<Table.Head>Name</Table.Head>
+							<Table.Head>Description</Table.Head>
+							<Table.Head>SKU</Table.Head>
+							<Table.Head class="text-right">Quantity</Table.Head>
+							<Table.Head class="text-center">Action</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{#each data.items as item}
+							<Table.Row>
+								<Table.Cell class="font-medium">{item.name}</Table.Cell>
+								<Table.Cell>{item.description ? item.description : '-'}</Table.Cell>
+								<Table.Cell>{item.sku}</Table.Cell>
+								<Table.Cell class="text-right">{item.quantity}</Table.Cell>
+								<Table.Cell class="text-center">
 									<Button
-										variant="destructive"
-										onclick={() => confimDeletion(item.id)}
+										variant="outline"
+										onclick={() => openEditModal(item)}
 										size="sm"
-										class="hover:cursor-pointer">Delete</Button
+										class="hover:cursor-pointer">Edit</Button
 									>
-								{/if}
-							</Table.Cell>
-						</Table.Row>
-					{:else}
-						<Table.Row>
-							<Table.Cell>No items found</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-			</Table.Root>
 
-			<div class="flex items-center justify-between border-t p-4">
+									{#if user.role === 'ADMIN'}
+										<Button
+											variant="destructive"
+											onclick={() => confimDeletion(item.id)}
+											size="sm"
+											class="hover:cursor-pointer">Delete</Button
+										>
+									{/if}
+								</Table.Cell>
+							</Table.Row>
+						{:else}
+							<Table.Row>
+								<Table.Cell>No items found</Table.Cell>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+			</Card.Content>
+
+			<Card.Footer class="flex items-center justify-between border-t p-4">
 				<div class="text-sm text-muted-foreground">
 					Page <strong>{data.pagination.current_page}</strong> of
 					<strong>{data.pagination.total_pages}</strong>
@@ -292,7 +294,7 @@
 						class="hover:cursor-pointer">Next</Button
 					>
 				</div>
-			</div>
+			</Card.Footer>
 		</Card.Root>
 
 		<Dialog.Root bind:open={editOpen}>

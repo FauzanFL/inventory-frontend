@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from '../$types';
 
-export const load: PageServerLoad = async ({ fetch, parent }) => {
+export const load: PageServerLoad = async ({ parent }) => {
 	const { user, token } = await parent();
 
 	if (!token) {
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
 		throw redirect(303, '/dashboard');
 	}
 
-	const response = await fetch('http://127.0.0.1:8000/api/users', {
+	const response = await fetch('http://127.0.0.1:8000/api/roles', {
 		headers: {
 			Authorization: `Bearer ${token}`
 		}
@@ -23,5 +23,5 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
 
 	const data = await response.json();
 
-	return { user, token, users: data };
+	return { user, token, roles: data };
 };
