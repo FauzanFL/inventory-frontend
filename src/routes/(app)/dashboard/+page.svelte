@@ -164,7 +164,9 @@
 	<div class="space-y-2">
 		<Dialog.Root bind:open>
 			<Dialog.Trigger>
-				<Button class="mb-0">Add Item</Button>
+				{#snippet child({ props })}
+					<Button {...props}>Add Item</Button>
+				{/snippet}
 			</Dialog.Trigger>
 			<Dialog.Content>
 				<Dialog.Header>
