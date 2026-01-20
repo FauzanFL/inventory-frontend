@@ -1,1 +1,393 @@
-<h1>Welcome admin</h1>
+<script lang="ts">
+	import { page } from '$app/state';
+	import { toast } from 'svelte-sonner';
+	import * as Table from '$lib/components/ui/table';
+	import * as Card from '$lib/components/ui/card';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Label } from '$lib/components/ui/label';
+	import { Input } from '$lib/components/ui/input';
+	import { invalidateAll } from '$app/navigation';
+
+	let { users, token } = $derived(page.data);
+
+	let open = $state(false);
+	let username = $state('');
+	let email = $state('');
+	let password = $state('');
+	let password2 = $state('');
+	let isLoading = $state(false);
+
+	let editOpen = $state(false);
+	let confirmOpen = $state(false);
+	let roleOpen = $state(false);
+	let isEditing = $state(false);
+	let isFetchingRole = $state(false);
+	let deletionId = $state(0);
+
+	let roles: { id: number; name: string }[] = $state([]);
+
+	let selectedUser = $state({
+		id: 0,
+		username: '',
+		email: '',
+		role_id: 0
+	});
+
+	function resetAddForm() {
+		username = '';
+		email = '';
+		password = '';
+		password2 = '';
+	}
+
+	function resetSelectedUser() {
+		selectedUser = {
+			id: 0,
+			username: '',
+			email: '',
+			role_id: 0
+		};
+	}
+
+	async function handleAddUser() {
+		if (password !== password2) {
+			toast.error('Passwords do not match');
+			return;
+		}
+
+		isLoading = true;
+		try {
+			const response = await fetch('http://localhost:8000/api/users', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				},
+				body: JSON.stringify({
+					username,
+					email,
+					password
+				})
+			});
+
+			if (response.ok) {
+				open = false;
+				resetAddForm();
+				await invalidateAll();
+				toast.success('User added successfully!');
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				const errorData = await response.json();
+				toast.error('Failed to add user:' + errorData.detail || response.statusText);
+			}
+		} catch (error) {
+			toast.error('Failed to add user');
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	function openEditModal(u: any) {
+		selectedUser = u;
+		editOpen = true;
+	}
+
+	async function handleUpdateUser() {
+		isEditing = true;
+		try {
+			const response = await fetch(`http://localhost:8000/api/users/${selectedUser.id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				},
+				body: JSON.stringify({
+					username: selectedUser.username,
+					email: selectedUser.email
+				})
+			});
+
+			if (response.ok) {
+				editOpen = false;
+				await invalidateAll();
+				toast.success('User updated successfully!');
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				toast.error('Failed to update user');
+			}
+		} catch (error) {
+			toast.error('Failed to update user');
+		} finally {
+			isEditing = false;
+			resetSelectedUser();
+		}
+	}
+
+	function confirmDelete(id: number) {
+		deletionId = id;
+		confirmOpen = true;
+	}
+
+	async function handleDeleteUser() {
+		try {
+			const response = await fetch(`http://localhost:8000/api/users/${deletionId}`, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				}
+			});
+
+			if (response.ok) {
+				confirmOpen = false;
+				await invalidateAll();
+				toast.success('User deleted successfully!');
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				toast.error('Failed to delete user');
+			}
+		} catch (error) {
+			toast.error('Failed to delete user');
+		}
+	}
+
+	async function openRoleModal(u: any) {
+		selectedUser = u;
+		roleOpen = true;
+		isFetchingRole = true;
+
+		try {
+			const response = await fetch('http://localhost:8000/api/roles', {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				}
+			});
+
+			if (response.ok) {
+				roles = await response.json();
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				toast.error('Failed to fetch roles');
+			}
+		} catch (error) {
+			toast.error('Failed to fetch roles');
+		} finally {
+			isFetchingRole = false;
+		}
+	}
+
+	async function handleUpdateRole(roleId: number) {
+		if (!roleId) {
+			toast.error('Please select a role');
+			return;
+		}
+
+		try {
+			const response = await fetch(
+				`http://localhost:8000/api/roles/${roleId}/users/${selectedUser.id}`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${token}`
+					}
+				}
+			);
+
+			if (response.ok) {
+				roleOpen = false;
+				await invalidateAll();
+				toast.success('Role updated successfully!');
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				toast.error('Failed to update role');
+			}
+		} catch (error) {
+			toast.error('Failed to update role');
+		} finally {
+			roleId = 0;
+			resetSelectedUser();
+		}
+	}
+</script>
+
+<div class="space-y-6 p-6">
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="text-3xl font-bold tracking-tight">User Management</h1>
+			<p class="text-muted-foreground">Manage your users here.</p>
+		</div>
+	</div>
+
+	<div class="space-y-2">
+		<Dialog.Root bind:open>
+			<Dialog.Trigger>
+				{#snippet child({ props })}
+					<Button {...props}>Add User</Button>
+				{/snippet}
+			</Dialog.Trigger>
+			<Dialog.Content>
+				<Dialog.Header>
+					<Dialog.Title class="text-xl font-bold">Add User</Dialog.Title>
+					<Dialog.Description>Add a new user.</Dialog.Description>
+				</Dialog.Header>
+
+				<div class="grid gap-4">
+					<div class="grid gap-2">
+						<Label for="username">Username</Label>
+						<Input id="username" bind:value={username} />
+					</div>
+					<div class="grid gap-2">
+						<Label for="email">Email</Label>
+						<Input type="email" id="email" bind:value={email} />
+					</div>
+					<div class="grid gap-2">
+						<Label for="password">Password</Label>
+						<Input type="password" id="password" bind:value={password} />
+					</div>
+					<div class="grid gap-2">
+						<Label for="password2">Confirm Password</Label>
+						<Input type="password" id="password2" bind:value={password2} />
+					</div>
+				</div>
+
+				<Dialog.Footer>
+					<Button type="submit" variant="default" onclick={handleAddUser} disabled={isLoading}>
+						{isLoading ? 'Adding...' : 'Add'}
+					</Button>
+				</Dialog.Footer>
+			</Dialog.Content>
+		</Dialog.Root>
+
+		<Card.Root>
+			<Table.Root>
+				<Table.Header>
+					<Table.Row>
+						<Table.Head>Username</Table.Head>
+						<Table.Head>Email</Table.Head>
+						<Table.Head>Role</Table.Head>
+						<Table.Head class="text-center">Action</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
+					{#each users as u}
+						<Table.Row>
+							<Table.Cell>{u.username}</Table.Cell>
+							<Table.Cell>{u.email}</Table.Cell>
+							<Table.Cell class="font-semibold">{u.role?.name}</Table.Cell>
+							<Table.Cell class="text-center">
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger>
+										{#snippet child({ props })}
+											<Button {...props} variant="outline">Manage</Button>
+										{/snippet}
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content>
+										<DropdownMenu.Item onclick={() => openEditModal(u)}>Edit User</DropdownMenu.Item
+										>
+										<DropdownMenu.Item onclick={() => openRoleModal(u)}
+											>Change Role</DropdownMenu.Item
+										>
+										<DropdownMenu.Item>Reset Password</DropdownMenu.Item>
+										<DropdownMenu.Item
+											onclick={() => confirmDelete(u.id)}
+											class="!focus:text-destructive-foreground cursor-pointer text-destructive
+											focus:bg-destructive">Delete</DropdownMenu.Item
+										>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
+							</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+			</Table.Root>
+		</Card.Root>
+	</div>
+
+	<!-- Edit User Modal -->
+	<Dialog.Root bind:open={editOpen}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title class="text-xl font-bold">Edit User</Dialog.Title>
+				<Dialog.Description>Edit a user.</Dialog.Description>
+			</Dialog.Header>
+
+			<div class="grid gap-4">
+				<div class="grid gap-2">
+					<Label for="username">Username</Label>
+					<Input id="username" bind:value={selectedUser.username} />
+				</div>
+				<div class="grid gap-2">
+					<Label for="email">Email</Label>
+					<Input type="email" id="email" bind:value={selectedUser.email} />
+				</div>
+			</div>
+
+			<Dialog.Footer>
+				<Button type="submit" variant="default" onclick={handleUpdateUser} disabled={isLoading}>
+					{isLoading ? 'Updating...' : 'Update'}
+				</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
+
+	<AlertDialog.Root bind:open={confirmOpen}>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title class="text-xl font-bold">Delete User</AlertDialog.Title>
+				<AlertDialog.Description>Are you sure you want to delete this user?</AlertDialog.Description
+				>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<Button type="submit" variant="default" onclick={handleDeleteUser} disabled={isLoading}>
+					{isLoading ? 'Deleting...' : 'Delete'}
+				</Button>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+
+	<!-- Change Role Modal -->
+	<Dialog.Root bind:open={roleOpen}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title class="text-xl font-bold">Change Role</Dialog.Title>
+				<Dialog.Description>Change a user's role.</Dialog.Description>
+			</Dialog.Header>
+
+			<div class="grid max-h-50 gap-2 overflow-auto rounded-md border p-2">
+				{#if isFetchingRole}
+					<p>Loading...</p>
+				{:else}
+					{#each roles as role}
+						<Button
+							variant={role.id === selectedUser.role_id ? 'default' : 'outline'}
+							class="flex items-center justify-between text-lg"
+							onclick={() => handleUpdateRole(role.id)}
+							disabled={selectedUser.role_id === role.id}
+						>
+							{role.name}
+							{#if selectedUser.role_id === role.id}
+								<span class="text-xs font-normal opacity-70">(Selected)</span>
+							{/if}
+						</Button>
+					{/each}
+				{/if}
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+</div>

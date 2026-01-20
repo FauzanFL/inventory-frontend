@@ -12,4 +12,6 @@ export const load: PageServerLoad = async ({ parent }) => {
 	if (user.role !== 'ADMIN') {
 		throw redirect(303, '/dashboard');
 	}
+
+	return { user };
 };

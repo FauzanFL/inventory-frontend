@@ -1,8 +1,9 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch, cookies, url }) => {
-	const token = cookies.get('access_token');
+export const load: PageServerLoad = async ({ fetch, parent, url }) => {
+	const layoutData = await parent();
+	const token = layoutData.token;
 	if (!token) {
 		throw redirect(303, '/login');
 	}

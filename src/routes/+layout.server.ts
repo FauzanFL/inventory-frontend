@@ -10,10 +10,10 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
 		});
 		if (response.ok) {
 			const user = await response.json();
-			return { user };
+			return { user, token };
 		}
 	} catch (error) {
 		console.error(error);
-		return { user: null };
+		return { user: null, token: null };
 	}
 };
