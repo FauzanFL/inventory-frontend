@@ -5,15 +5,22 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { logout } from '$lib/api';
 	import { goto } from '$app/navigation';
+	import { cn } from '$lib/utils';
 
 	let user = $derived(page.data.user);
 
 	function gotoProfile() {
 		goto('/profile');
 	}
+
+	const navItems = [
+		{ name: 'User Management', href: '/admin/users' },
+		{ name: 'Roles', href: '/admin/roles' },
+		{ name: 'Permissions', href: '/admin/permissions' }
+	];
 </script>
 
-<nav class="sticky top-0 border-b bg-background/95 backdrop-blur">
+<nav class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<div class="flex items-center gap-8">
@@ -22,21 +29,17 @@
 				</a>
 
 				{#if user?.role === 'ADMIN'}
-					<a
-						href="/admin/users"
-						class="text-smfont-medium text-muted-foreground transition-colors hover:text-primary"
-						>User Management</a
-					>
-					<a
-						href="/admin/roles"
-						class="text-smfont-medium text-muted-foreground transition-colors hover:text-primary"
-						>Roles</a
-					>
-					<a
-						href="/admin/permissions"
-						class="text-smfont-medium text-muted-foreground transition-colors hover:text-primary"
-						>Permissions</a
-					>
+					{#each navItems as item}
+						<a
+							href={item.href}
+							class={cn(
+								'text-sm font-medium transition-colors',
+								page.url.pathname === item.href
+									? 'text-primary'
+									: 'text-muted-foreground hover:text-accent-foreground'
+							)}>{item.name}</a
+						>
+					{/each}
 				{/if}
 			</div>
 			<div class="flex items-center gap-4">
