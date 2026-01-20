@@ -4,8 +4,13 @@
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { logout } from '$lib/api';
+	import { goto } from '$app/navigation';
 
 	let user = $derived(page.data.user);
+
+	function gotoProfile() {
+		goto('/profile');
+	}
 </script>
 
 <nav class="sticky top-0 border-b bg-background/95 backdrop-blur">
@@ -45,13 +50,15 @@
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								<Avatar.Root class="h-9 w-9 cursor-pointer border">
-									<Avatar.Fallback class="font-bold">{user?.username?.slice(0, 2)}</Avatar.Fallback>
+									<Avatar.Fallback class="font-bold"
+										>{user?.username ? user.username[0].toUpperCase() : '?'}</Avatar.Fallback
+									>
 								</Avatar.Root>
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="end" class="w-48">
 								<DropdownMenu.Label>My Account</DropdownMenu.Label>
 								<DropdownMenu.Separator />
-								<DropdownMenu.Item>Profile</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={gotoProfile}>Profile</DropdownMenu.Item>
 								<DropdownMenu.Item
 									onclick={logout}
 									class="!focus:text-destructive-foreground cursor-pointer text-destructive focus:bg-destructive"
