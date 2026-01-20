@@ -284,10 +284,10 @@
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head>Username</Table.Head>
-							<Table.Head>Email</Table.Head>
-							<Table.Head>Role</Table.Head>
-							<Table.Head class="text-center">Action</Table.Head>
+							<Table.Head class="font-bold">Username</Table.Head>
+							<Table.Head class="font-bold">Email</Table.Head>
+							<Table.Head class="font-bold">Role</Table.Head>
+							<Table.Head class="text-center font-bold">Action</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>

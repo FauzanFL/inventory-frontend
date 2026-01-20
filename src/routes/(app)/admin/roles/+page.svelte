@@ -183,10 +183,10 @@
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head>Name</Table.Head>
-							<Table.Head>Description</Table.Head>
-							<Table.Head>Permissions</Table.Head>
-							<Table.Head class="text-center">Action</Table.Head>
+							<Table.Head class="font-bold">Name</Table.Head>
+							<Table.Head class="font-bold">Description</Table.Head>
+							<Table.Head class="font-bold">Permissions</Table.Head>
+							<Table.Head class="text-center font-bold">Action</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
