@@ -249,7 +249,6 @@
 	</Dialog.Root>
 
 	<AlertDialog.Root bind:open={confirmOpen}>
-		<AlertDialog.Trigger />
 		<AlertDialog.Content>
 			<AlertDialog.Header>
 				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
@@ -258,7 +257,9 @@
 			</AlertDialog.Header>
 			<AlertDialog.Footer>
 				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-				<Button variant="destructive" onclick={handleDeleteRole}>Yes, delete</Button>
+				<Button variant="destructive" onclick={handleDeleteRole} disabled={isLoading}
+					>{isLoading ? 'Deleting...' : 'Yes, delete!'}</Button
+				>
 			</AlertDialog.Footer>
 		</AlertDialog.Content>
 	</AlertDialog.Root>
