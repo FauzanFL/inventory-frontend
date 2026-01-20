@@ -2,12 +2,13 @@
 	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { logout } from '$lib/api';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { invalidateAll } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 
 	import { page } from '$app/state';
 
@@ -24,7 +25,10 @@
 	let isLoading = $state(false);
 
 	let editOpen = $state(false);
+	let confirmOpen = $state(false);
 	let isEditing = $state(false);
+
+	let deletionId = $state(0);
 
 	function resetAddForm() {
 		name = '';
@@ -72,14 +76,15 @@
 			if (response.ok) {
 				editOpen = false;
 				await invalidateAll();
+				toast.success('Item updated successfully!');
 			} else {
 				if (response.status === 401) {
-					console.error('Unauthorized');
+					toast.error('Unauthorized');
 				}
-				console.error('Failed to add item');
+				toast.error('Failed to update item');
 			}
 		} catch (error) {
-			console.error('Failed to add items');
+			toast.error('Failed to update item');
 		} finally {
 			isEditing = false;
 		}
@@ -106,24 +111,29 @@
 				open = false;
 				resetAddForm();
 				await invalidateAll();
+				toast.success('Item added successfully!');
 			} else {
 				if (response.status === 401) {
-					console.error('Unauthorized');
+					toast.error('Unauthorized');
 				}
-				console.error('Failed to add item');
+				toast.error('Failed to add item');
 			}
 		} catch (error) {
-			console.error('Failed to add items');
+			toast.error('Failed to add item');
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	async function handleDeleteItem(id: number) {
-		if (!confirm('Are you sure you want to delete this item?')) return;
+	function confimDeletion(id: number) {
+		confirmOpen = true;
+		deletionId = id;
+	}
 
+	async function handleDeleteItem() {
+		confirmOpen = false;
 		try {
-			const response = await fetch(`http://localhost:8000/api/items/${id}`, {
+			const response = await fetch(`http://localhost:8000/api/items/${deletionId}`, {
 				method: 'DELETE',
 				headers: {
 					Authorization: `Bearer ${data.token}`
@@ -132,14 +142,17 @@
 
 			if (response.ok) {
 				await invalidateAll();
+				toast.success('Item deleted successfully!');
 			} else {
 				if (response.status === 401) {
 					console.error('Unauthorized');
 				}
-				console.error('Failed to delete item');
+				toast.error('Failed to delete item');
 			}
 		} catch (error) {
-			console.error('Failed to delete item');
+			toast.error('Failed to delete item');
+		} finally {
+			deletionId = 0;
 		}
 	}
 </script>
@@ -230,7 +243,7 @@
 								{#if user.role === 'ADMIN'}
 									<Button
 										variant="destructive"
-										onclick={() => handleDeleteItem(item.id)}
+										onclick={() => confimDeletion(item.id)}
 										size="sm"
 										class="hover:cursor-pointer">Delete</Button
 									>
@@ -315,5 +328,22 @@
 				</Dialog.Footer>
 			</Dialog.Content>
 		</Dialog.Root>
+
+		<AlertDialog.Root bind:open={confirmOpen}>
+			<AlertDialog.Content>
+				<AlertDialog.Header>
+					<AlertDialog.Title class="text-xl font-bold">Delete Item</AlertDialog.Title>
+					<AlertDialog.Description
+						>Are you sure you want to delete this item?</AlertDialog.Description
+					>
+				</AlertDialog.Header>
+				<AlertDialog.Footer>
+					<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+					<Button variant="destructive" onclick={handleDeleteItem} class="hover:cursor-pointer"
+						>Yes, delete!</Button
+					>
+				</AlertDialog.Footer>
+			</AlertDialog.Content>
+		</AlertDialog.Root>
 	</div>
 </div>

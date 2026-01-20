@@ -53,13 +53,12 @@
 				toast.success('Profile updated successfully!');
 			} else {
 				if (response.status === 401) {
-					console.error('Unauthorized');
+					toast.error('Unauthorized');
 				}
 				const errorData = await response.json();
 				toast.error('Failed to update profile: ' + errorData.detail || response.statusText);
 			}
 		} catch (error) {
-			console.error('Failed to update profile');
 			toast.error('Failed to update profile');
 		} finally {
 			isLoading = false;
