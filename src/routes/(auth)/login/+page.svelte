@@ -39,7 +39,7 @@
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-muted/40">
-	<Card.Root class="w-full max-w-md">
+	<Card.Root class="m-2 w-full max-w-md">
 		<Card.Header class="space-y-1 text-center">
 			<Card.Title class="text-2xl font-bold">Login to your account</Card.Title>
 		</Card.Header>

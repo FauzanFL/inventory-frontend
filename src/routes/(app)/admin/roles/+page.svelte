@@ -5,13 +5,15 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { invalidateAll } from '$app/navigation';
 
-	let { roles, pagination, token } = $derived(page.data);
+	let { roles, permissions, pagination, token } = $derived(page.data);
 	let pages = $derived(Array.from({ length: pagination.total_pages }, (_, i) => i + 1));
 
 	let open = $state(false);
@@ -21,14 +23,27 @@
 
 	let editOpen = $state(false);
 	let confirmOpen = $state(false);
+	let isSheetOpen = $state(false);
 	let isEditing = $state(false);
+	let isSaving = $state(false);
 	let deletionId = $state(0);
 
-	let selectedRole = $state({
-		id: 0,
-		name: '',
-		description: ''
-	});
+	let selectedRole = $state<any>(null);
+	let selectedPermissionIds = $state<number[]>([]);
+
+	function openPermissionEditor(role: any) {
+		selectedRole = role;
+		selectedPermissionIds = role.permissions.map((p: any) => p.id);
+		isSheetOpen = true;
+	}
+
+	function togglePermission(id: number) {
+		if (selectedPermissionIds.includes(id)) {
+			selectedPermissionIds = selectedPermissionIds.filter((pid) => pid !== id);
+		} else {
+			selectedPermissionIds = [...selectedPermissionIds, id];
+		}
+	}
 
 	function resetAddForm() {
 		name = '';
@@ -138,6 +153,40 @@
 			isLoading = false;
 		}
 	}
+
+	async function handleSavePermissions() {
+		isSaving = true;
+		try {
+			const response = await fetch(
+				`http://localhost:8000/api/roles/${selectedRole.id}/permissions`,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${token}`
+					},
+					body: JSON.stringify({
+						permission_ids: selectedPermissionIds
+					})
+				}
+			);
+
+			if (response.ok) {
+				isSheetOpen = false;
+				await invalidateAll();
+				toast.success('Permissions updated successfully!');
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				toast.error('Failed to update permissions');
+			}
+		} catch (error) {
+			toast.error('Failed to update permissions');
+		} finally {
+			isSaving = false;
+		}
+	}
 </script>
 
 <div class="space-y-6 p-6">
@@ -209,7 +258,9 @@
 									<Button variant="outline" size="sm" onclick={() => openEditModal(role)}
 										>Edit</Button
 									>
-									<Button variant="outline" size="sm">Manage Permissions</Button>
+									<Button variant="outline" size="sm" onclick={() => openPermissionEditor(role)}
+										>Manage Permissions</Button
+									>
 									<Button variant="destructive" size="sm" onclick={() => openDeleteModal(role.id)}
 										>Delete</Button
 									>
@@ -285,6 +336,7 @@
 		</Dialog.Content>
 	</Dialog.Root>
 
+	<!-- Delete Modal -->
 	<AlertDialog.Root bind:open={confirmOpen}>
 		<AlertDialog.Content>
 			<AlertDialog.Header>
@@ -300,4 +352,52 @@
 			</AlertDialog.Footer>
 		</AlertDialog.Content>
 	</AlertDialog.Root>
+
+	<!-- Edit Permissions Sheet -->
+	<Sheet.Root bind:open={isSheetOpen}>
+		<Sheet.Content side="right" class="flex h-full w-full flex-col p-0 sm:max-w-md">
+			<Sheet.Header class="border-b">
+				<Sheet.Title>Manage Permissions</Sheet.Title>
+				<Sheet.Description
+					>Configure what <strong>{selectedRole?.name}</strong> can or cannot do in the system.</Sheet.Description
+				>
+			</Sheet.Header>
+
+			<div class="flex-1 overflow-y-auto py-2">
+				<div class="grid gap-2 overflow-auto p-2">
+					{#each permissions as permission}
+						<div class="flex items-center space-y-0 space-x-3 rounded-md border p-3 shadow-sm">
+							<Checkbox
+								id={permission.id}
+								checked={selectedPermissionIds.includes(permission.id)}
+								onCheckedChange={() => togglePermission(permission.id)}
+							/>
+							<div class="flex flex-col gap-1 leading-none">
+								<Label for={permission.id} class="cursor-pointer text-sm leading-none font-medium">
+									{permission.name}
+								</Label>
+								{#if permission.description}
+									<span class="text-xs text-muted-foreground">{permission.description}</span>
+								{/if}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+
+			<Sheet.Footer class="flex-col gap-2 sm:flex-col">
+				<Button
+					variant="default"
+					class="w-full"
+					onclick={handleSavePermissions}
+					disabled={isSaving}
+				>
+					{isSaving ? 'Saving...' : 'Save Changes'}
+				</Button>
+				<Button variant="outline" class="w-full" onclick={() => (isSheetOpen = false)}>
+					Cancel
+				</Button>
+			</Sheet.Footer>
+		</Sheet.Content>
+	</Sheet.Root>
 </div>
