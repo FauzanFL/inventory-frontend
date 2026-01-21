@@ -11,7 +11,8 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { invalidateAll } from '$app/navigation';
 
-	let { roles, token } = $derived(page.data);
+	let { roles, pagination, token } = $derived(page.data);
+	let pages = $derived(Array.from({ length: pagination.total_pages }, (_, i) => i + 1));
 
 	let open = $state(false);
 	let name = $state('');
@@ -217,6 +218,41 @@
 					</Table.Body>
 				</Table.Root>
 			</Card.Content>
+			<Card.Footer class="flex items-center justify-between border-t p-4">
+				<div class="text-sm text-muted-foreground">
+					Page <strong>{pagination.current_page}</strong> of
+					<strong>{pagination.total_pages}</strong>
+				</div>
+
+				<div class="flex items-center space-x-2">
+					<Button
+						variant="outline"
+						size="sm"
+						href="?page={pagination.current_page - 1}"
+						disabled={pagination.current_page <= 1}
+						class="hover:cursor-pointer">Previous</Button
+					>
+
+					<div class="hidden gap-1 md:flex">
+						{#each pages as page}
+							<Button
+								variant={page === pagination.current_page ? 'default' : 'outline'}
+								size="sm"
+								href="?page={page}"
+								class="hover:cursor-pointer">{page}</Button
+							>
+						{/each}
+					</div>
+
+					<Button
+						variant="outline"
+						size="sm"
+						href="?page={pagination.current_page + 1}"
+						disabled={pagination.current_page >= pagination.total_pages}
+						class="hover:cursor-pointer">Next</Button
+					>
+				</div>
+			</Card.Footer>
 		</Card.Root>
 	</div>
 
