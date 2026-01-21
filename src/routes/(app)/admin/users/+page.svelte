@@ -15,6 +15,12 @@
 
 	let pages = $derived(Array.from({ length: pagination.total_pages }, (_, i) => i + 1));
 
+	$effect(() => {
+		if (!openChangePassword) {
+			resetNewPassword();
+		}
+	});
+
 	let open = $state(false);
 	let username = $state('');
 	let email = $state('');
@@ -28,6 +34,10 @@
 	let isEditing = $state(false);
 	let isFetchingRole = $state(false);
 	let deletionId = $state(0);
+
+	let openChangePassword = $state(false);
+	let newPassword = $state('');
+	let newPassword2 = $state('');
 
 	let roles: { id: number; name: string }[] = $state([]);
 
@@ -43,6 +53,11 @@
 		email = '';
 		password = '';
 		password2 = '';
+	}
+
+	function resetNewPassword() {
+		newPassword = '';
+		newPassword2 = '';
 	}
 
 	function resetSelectedUser() {
@@ -116,6 +131,7 @@
 
 			if (response.ok) {
 				editOpen = false;
+				resetSelectedUser();
 				await invalidateAll();
 				toast.success('User updated successfully!');
 			} else {
@@ -128,7 +144,6 @@
 			toast.error('Failed to update user');
 		} finally {
 			isEditing = false;
-			resetSelectedUser();
 		}
 	}
 
@@ -150,6 +165,7 @@
 
 			if (response.ok) {
 				confirmOpen = false;
+				resetSelectedUser();
 				await invalidateAll();
 				toast.success('User deleted successfully!');
 			} else {
@@ -179,7 +195,8 @@
 			});
 
 			if (response.ok) {
-				roles = await response.json();
+				const data = await response.json();
+				roles = data.roles;
 			} else {
 				if (response.status === 401) {
 					toast.error('Unauthorized');
@@ -215,6 +232,7 @@
 
 			if (response.ok) {
 				roleOpen = false;
+				resetSelectedUser();
 				await invalidateAll();
 				toast.success('Role updated successfully!');
 			} else {
@@ -228,7 +246,54 @@
 		} finally {
 			roleId = 0;
 			isLoading = false;
-			resetSelectedUser();
+		}
+	}
+
+	function openChangePasswordModal(u: any) {
+		selectedUser = u;
+		openChangePassword = true;
+	}
+
+	async function handleUpdateUserPassword() {
+		if (!newPassword) {
+			toast.error('Please enter a new password');
+			return;
+		}
+
+		if (newPassword !== newPassword2) {
+			toast.error('Passwords do not match');
+			return;
+		}
+
+		isEditing = true;
+		try {
+			const response = await fetch(`http://localhost:8000/api/users/${selectedUser.id}/password`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`
+				},
+				body: JSON.stringify({
+					password: newPassword
+				})
+			});
+
+			if (response.ok) {
+				openChangePassword = false;
+				resetSelectedUser();
+				resetNewPassword();
+				await invalidateAll();
+				toast.success('Password updated successfully!');
+			} else {
+				if (response.status === 401) {
+					toast.error('Unauthorized');
+				}
+				toast.error('Failed to update password');
+			}
+		} catch (error) {
+			toast.error('Failed to update password');
+		} finally {
+			isEditing = false;
 		}
 	}
 </script>
@@ -312,7 +377,9 @@
 											<DropdownMenu.Item onclick={() => openRoleModal(u)}
 												>Change Role</DropdownMenu.Item
 											>
-											<DropdownMenu.Item>Reset Password</DropdownMenu.Item>
+											<DropdownMenu.Item onclick={() => openChangePasswordModal(u)}
+												>Reset Password</DropdownMenu.Item
+											>
 											<DropdownMenu.Item
 												onclick={() => confirmDelete(u.id)}
 												class="!focus:text-destructive-foreground cursor-pointer text-destructive
@@ -391,6 +458,7 @@
 		</Dialog.Content>
 	</Dialog.Root>
 
+	<!-- Delete User Modal -->
 	<AlertDialog.Root bind:open={confirmOpen}>
 		<AlertDialog.Content>
 			<AlertDialog.Header>
@@ -434,6 +502,38 @@
 					{/each}
 				{/if}
 			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+
+	<!-- Change Password Modal -->
+	<Dialog.Root bind:open={openChangePassword}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title class="text-xl font-bold">Change Password</Dialog.Title>
+				<Dialog.Description>Change a user's password.</Dialog.Description>
+			</Dialog.Header>
+
+			<div class="grid gap-4">
+				<div class="grid gap-2">
+					<Label for="newPassword">Password</Label>
+					<Input type="password" id="newPassword" bind:value={newPassword} />
+				</div>
+				<div class="grid gap-2">
+					<Label for="newPassword2">Confirm Password</Label>
+					<Input type="password" id="newPassword2" bind:value={newPassword2} />
+				</div>
+			</div>
+
+			<Dialog.Footer>
+				<Button
+					type="submit"
+					variant="default"
+					onclick={handleUpdateUserPassword}
+					disabled={isEditing}
+				>
+					{isEditing ? 'Updating...' : 'Update'}
+				</Button>
+			</Dialog.Footer>
 		</Dialog.Content>
 	</Dialog.Root>
 </div>

@@ -123,6 +123,7 @@
 
 			if (response.ok) {
 				confirmOpen = false;
+				deletionId = 0;
 				await invalidateAll();
 				toast.success('Role deleted successfully!');
 			} else {

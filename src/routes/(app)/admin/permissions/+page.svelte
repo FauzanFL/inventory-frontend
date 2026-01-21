@@ -126,6 +126,7 @@
 
 			if (response.ok) {
 				confirmOpen = false;
+				deletionId = 0;
 				await invalidateAll();
 				toast.success('Permission deleted successfully!');
 			} else {

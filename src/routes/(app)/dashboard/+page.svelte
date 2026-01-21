@@ -142,6 +142,7 @@
 
 			if (response.ok) {
 				await invalidateAll();
+				deletionId = 0;
 				toast.success('Item deleted successfully!');
 			} else {
 				if (response.status === 401) {
@@ -151,8 +152,6 @@
 			}
 		} catch (error) {
 			toast.error('Failed to delete item');
-		} finally {
-			deletionId = 0;
 		}
 	}
 </script>
