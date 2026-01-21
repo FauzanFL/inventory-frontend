@@ -400,8 +400,8 @@
 			</AlertDialog.Header>
 			<AlertDialog.Footer>
 				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-				<Button type="submit" variant="default" onclick={handleDeleteUser} disabled={isEditing}>
-					{isLoading ? 'Deleting...' : 'Delete'}
+				<Button type="submit" variant="destructive" onclick={handleDeleteUser} disabled={isEditing}>
+					{isLoading ? 'Deleting...' : 'Yes, Delete!'}
 				</Button>
 			</AlertDialog.Footer>
 		</AlertDialog.Content>
