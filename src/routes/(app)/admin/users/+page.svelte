@@ -10,6 +10,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { invalidateAll } from '$app/navigation';
+	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 
 	let { users, pagination, token } = $derived(page.data);
 
@@ -307,44 +308,48 @@
 	</div>
 
 	<div class="space-y-2">
-		<Dialog.Root bind:open>
-			<Dialog.Trigger>
-				{#snippet child({ props })}
-					<Button {...props}>Add User</Button>
-				{/snippet}
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Title class="text-xl font-bold">Add User</Dialog.Title>
-					<Dialog.Description>Add a new user.</Dialog.Description>
-				</Dialog.Header>
+		<div class="flex items-center justify-between">
+			<Dialog.Root bind:open>
+				<Dialog.Trigger>
+					{#snippet child({ props })}
+						<Button {...props}>Add User</Button>
+					{/snippet}
+				</Dialog.Trigger>
+				<Dialog.Content>
+					<Dialog.Header>
+						<Dialog.Title class="text-xl font-bold">Add User</Dialog.Title>
+						<Dialog.Description>Add a new user.</Dialog.Description>
+					</Dialog.Header>
 
-				<div class="grid gap-4">
-					<div class="grid gap-2">
-						<Label for="username">Username</Label>
-						<Input id="username" bind:value={username} />
+					<div class="grid gap-4">
+						<div class="grid gap-2">
+							<Label for="username">Username</Label>
+							<Input id="username" bind:value={username} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="email">Email</Label>
+							<Input type="email" id="email" bind:value={email} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="password">Password</Label>
+							<Input type="password" id="password" bind:value={password} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="password2">Confirm Password</Label>
+							<Input type="password" id="password2" bind:value={password2} />
+						</div>
 					</div>
-					<div class="grid gap-2">
-						<Label for="email">Email</Label>
-						<Input type="email" id="email" bind:value={email} />
-					</div>
-					<div class="grid gap-2">
-						<Label for="password">Password</Label>
-						<Input type="password" id="password" bind:value={password} />
-					</div>
-					<div class="grid gap-2">
-						<Label for="password2">Confirm Password</Label>
-						<Input type="password" id="password2" bind:value={password2} />
-					</div>
-				</div>
 
-				<Dialog.Footer>
-					<Button type="submit" variant="default" onclick={handleAddUser} disabled={isLoading}>
-						{isLoading ? 'Adding...' : 'Add'}
-					</Button>
-				</Dialog.Footer>
-			</Dialog.Content>
-		</Dialog.Root>
+					<Dialog.Footer>
+						<Button type="submit" variant="default" onclick={handleAddUser} disabled={isLoading}>
+							{isLoading ? 'Adding...' : 'Add'}
+						</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+
+			<SearchInput placeholder="Search user (username/email)..." />
+		</div>
 
 		<Card.Root>
 			<Card.Content>

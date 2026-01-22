@@ -12,6 +12,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { invalidateAll } from '$app/navigation';
+	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 
 	let { roles, permissions, pagination, token } = $derived(page.data);
 	let pages = $derived(Array.from({ length: pagination.total_pages }, (_, i) => i + 1));
@@ -198,36 +199,40 @@
 	</div>
 
 	<div class="space-y-2">
-		<Dialog.Root bind:open>
-			<Dialog.Trigger>
-				{#snippet child({ props })}
-					<Button {...props}>Add Role</Button>
-				{/snippet}
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Title class="text-xl font-bold">Add Role</Dialog.Title>
-					<Dialog.Description>Add a new role.</Dialog.Description>
-				</Dialog.Header>
+		<div class="flex items-center justify-between">
+			<Dialog.Root bind:open>
+				<Dialog.Trigger>
+					{#snippet child({ props })}
+						<Button {...props}>Add Role</Button>
+					{/snippet}
+				</Dialog.Trigger>
+				<Dialog.Content>
+					<Dialog.Header>
+						<Dialog.Title class="text-xl font-bold">Add Role</Dialog.Title>
+						<Dialog.Description>Add a new role.</Dialog.Description>
+					</Dialog.Header>
 
-				<div class="grid gap-4">
-					<div class="grid gap-2">
-						<Label for="name">Name</Label>
-						<Input id="name" bind:value={name} />
+					<div class="grid gap-4">
+						<div class="grid gap-2">
+							<Label for="name">Name</Label>
+							<Input id="name" bind:value={name} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="description">Description</Label>
+							<Textarea id="description" bind:value={description} />
+						</div>
 					</div>
-					<div class="grid gap-2">
-						<Label for="description">Description</Label>
-						<Textarea id="description" bind:value={description} />
-					</div>
-				</div>
 
-				<Dialog.Footer>
-					<Button type="submit" variant="default" onclick={handleAddRole} disabled={isLoading}>
-						{isLoading ? 'Adding...' : 'Add'}
-					</Button>
-				</Dialog.Footer>
-			</Dialog.Content>
-		</Dialog.Root>
+					<Dialog.Footer>
+						<Button type="submit" variant="default" onclick={handleAddRole} disabled={isLoading}>
+							{isLoading ? 'Adding...' : 'Add'}
+						</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+
+			<SearchInput placeholder="Search roles..." />
+		</div>
 
 		<Card.Root>
 			<Card.Content>

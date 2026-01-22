@@ -11,6 +11,7 @@
 	import { toast } from 'svelte-sonner';
 
 	import { page } from '$app/state';
+	import SearchInput from '$lib/components/ui/SearchInput.svelte';
 
 	let { data } = $props();
 	let user = $derived(page.data.user);
@@ -174,44 +175,48 @@
 	</div>
 
 	<div class="space-y-2">
-		<Dialog.Root bind:open>
-			<Dialog.Trigger>
-				{#snippet child({ props })}
-					<Button {...props}>Add Item</Button>
-				{/snippet}
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Title class="text-xl font-bold">Add Item</Dialog.Title>
-					<Dialog.Description>Add a new item to your inventory.</Dialog.Description>
-				</Dialog.Header>
+		<div class="flex items-center justify-between">
+			<Dialog.Root bind:open>
+				<Dialog.Trigger>
+					{#snippet child({ props })}
+						<Button {...props}>Add Item</Button>
+					{/snippet}
+				</Dialog.Trigger>
+				<Dialog.Content>
+					<Dialog.Header>
+						<Dialog.Title class="text-xl font-bold">Add Item</Dialog.Title>
+						<Dialog.Description>Add a new item to your inventory.</Dialog.Description>
+					</Dialog.Header>
 
-				<div class="grid gap-4">
-					<div class="grid gap-2">
-						<Label for="name">Name</Label>
-						<Input id="name" bind:value={name} />
+					<div class="grid gap-4">
+						<div class="grid gap-2">
+							<Label for="name">Name</Label>
+							<Input id="name" bind:value={name} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="sku">SKU</Label>
+							<Input id="sku" bind:value={sku} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="quantity">Quantity</Label>
+							<Input type="number" id="quantity" bind:value={quantity} />
+						</div>
+						<div class="grid gap-2">
+							<Label for="description">Description</Label>
+							<Textarea id="description" bind:value={description} />
+						</div>
 					</div>
-					<div class="grid gap-2">
-						<Label for="sku">SKU</Label>
-						<Input id="sku" bind:value={sku} />
-					</div>
-					<div class="grid gap-2">
-						<Label for="quantity">Quantity</Label>
-						<Input type="number" id="quantity" bind:value={quantity} />
-					</div>
-					<div class="grid gap-2">
-						<Label for="description">Description</Label>
-						<Textarea id="description" bind:value={description} />
-					</div>
-				</div>
 
-				<Dialog.Footer>
-					<Button type="submit" variant="default" onclick={handleAddItem} disabled={isLoading}>
-						{isLoading ? 'Adding...' : 'Add'}
-					</Button>
-				</Dialog.Footer>
-			</Dialog.Content>
-		</Dialog.Root>
+					<Dialog.Footer>
+						<Button type="submit" variant="default" onclick={handleAddItem} disabled={isLoading}>
+							{isLoading ? 'Adding...' : 'Add'}
+						</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+
+			<SearchInput placeholder="Search items (Name/SKU)..." />
+		</div>
 
 		<Card.Root>
 			<Card.Content>

@@ -4,7 +4,8 @@ import type { PageServerLoad } from '../$types';
 export const load: PageServerLoad = async ({ fetch, parent, url }) => {
 	const { user, token } = await parent();
 
-	const page = url.searchParams.get('page') || 1;
+	const page = url.searchParams.get('page') || '1';
+	const search = url.searchParams.get('search') || '';
 
 	if (!token) {
 		throw redirect(303, '/login');
@@ -14,9 +15,16 @@ export const load: PageServerLoad = async ({ fetch, parent, url }) => {
 		throw redirect(303, '/dashboard');
 	}
 
+	const apiUrl = new URL('http://127.0.0.1:8000/api/roles');
+	apiUrl.searchParams.set('page', page);
+	apiUrl.searchParams.set('limit', '10');
+	if (search) {
+		apiUrl.searchParams.set('search', search);
+	}
+
 	try {
 		const [rolesRes, permissionsRes] = await Promise.all([
-			fetch(`http://127.0.0.1:8000/api/roles?page=${page}&limit=10`, {
+			fetch(apiUrl.toString(), {
 				headers: {
 					Authorization: `Bearer ${token}`
 				}
